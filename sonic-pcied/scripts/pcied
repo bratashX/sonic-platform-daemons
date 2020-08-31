@@ -54,17 +54,17 @@ class DaemonPcied(DaemonBase):
         self.state_db.connect("STATE_DB")
 
     def check_pcie_devices(self):
-        cmd = [ 'sudo', 'pcieutil', 'pcie-check' ]
+        cmd = ['pcieutil', 'pcie-check' ]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         resultInfo, err = p.communicate()
         pcie_db_state = self.read_state_db("PCIE_STATUS|", "PCIE_DEVICES")
 
         for line in resultInfo.splitlines():
             if PCIE_RESULT_REGEX in line:
-                if "PASSED" in line and "PASSED" not in pcie_db_state:
+                if "PASSED" in line and pcie_db_state != "PASSED":
                     self.update_state_db("PCIE_STATUS|", "PCIE_DEVICES", "PASSED")
                     self.log_info("PCIe device status check : PASSED")
-                elif "FAILED" in line and "PASSED" in pcie_db_state:
+                elif "FAILED" in line and pcie_db_state != "FAILED":
                     self.update_state_db("PCIE_STATUS|", "PCIE_DEVICES", "FAILED")
                     self.log_info("PCIe device status check : FAILED")
 
